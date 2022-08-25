@@ -14,19 +14,31 @@ namespace mintrans_please_connect
 
         public static async Task MainAsync(string[] args)
         {
-            var outputFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Usage.png");
-            var fileInfo = new FileInfo(outputFile);
-            if (fileInfo.Exists)
+            try
             {
-                fileInfo.Delete();
+                var outputFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Usage.png");
+                var fileInfo = new FileInfo(outputFile);
+                if (fileInfo.Exists)
+                {
+                    fileInfo.Delete();
+                }
+                using var browserFetcher = new BrowserFetcher();
+                await browserFetcher.DownloadAsync();
+                await using var browser = await Puppeteer.LaunchAsync(
+                    new LaunchOptions { Headless = true });
+                await using var page = await browser.NewPageAsync();
+                await page.GoToAsync("https://mtrans.rk.gov.ru/ru/structure/opendata_9102011880_forma1");
+                await Task.Delay(TimeSpan.FromSeconds(45));
+                await page.ScreenshotAsync(outputFile);
+                Console.WriteLine($"ОНО СКРИНШОТНУЛОСЬ, файл в {outputFile}");
             }
-            using var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
-            await using var browser = await Puppeteer.LaunchAsync(
-                new LaunchOptions { Headless = true });
-            await using var page = await browser.NewPageAsync();
-            await page.GoToAsync("http://www.google.com");
-            await page.ScreenshotAsync(outputFile);
+            catch (Exception e)
+            {
+                Console.WriteLine("ДА НЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕТ");
+                Console.WriteLine(e);
+                throw;
+            }
+            
         }
     }
 }
